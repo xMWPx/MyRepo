@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="calc.css">
+    <script src="https://kit.fontawesome.com/e3cda984d3.js" crossorigin="anonymous"></script>
+    <title>Calc with Auto-Updated Operation History</title>
+
+    <script>
+        let memory = 0;
+        let operationHistory = [];
+
+        // Function to load history from local storage
+        function loadHistory() {
+            const savedHistory = localStorage.getItem('operationHistory');
+            if (savedHistory) {
+                operationHistory = JSON.parse(savedHistory);
+                updateHistory(); // Display the saved history
+            }
+        }
+
+        // Function to save history to local storage
+        function saveHistory() {
+            localStorage.setItem('operationHistory', JSON.stringify(operationHistory));
+        }
+
+        function hide() {
+            var x = document.getElementById("hide");
+            if (x.style.display === "none") {
+                x.style.display = "block";
+            } else {
+                x.style.display = "none";
+            }
+        }
+
+        function updateHistory() {
+            const historyElement = document.getElementById('history-list');
+            historyElement.innerHTML = ''; // Clear current history
+
+            operationHistory.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.textContent = `${index + 1}. ${item}`;
+                historyElement.appendChild(li);
+            });
+
+            var historyDiv = document.getElementById("history-div");
+            if (historyDiv.style.display === "none") {
+                historyDiv.style.display = "block";
+            }
+        }
+
+        function clickButton(value) {
+            const input = document.getElementById('input');
+            if (value === 'C') {
+                input.value = ''; // Clear input
+            } else if (value === 'CE') {
+                input.value = input.value.slice(0, -1); // Clear last entry
+            } else if (value === '=') {
+                try {
+                    const expression = input.value;
+                    const result = eval(expression); // Evaluate the expression
+                    input.value = result;
+
+                    // Add to operation history
+                    operationHistory.push(`${expression} = ${result}`);
+
+                    // Save and update history automatically
+                    saveHistory();
+                    updateHistory();
+                } catch (e) {
+                    input.value = 'Error'; // Handle invalid expressions
+                }
+            } else if (value === 'M+') {
+                if (input.value !== '') {
+                    memory += parseFloat(input.value);
+                    input.value = ''; 
+                }
+            } else if (value === 'MR') {
+                input.value = memory;
+            } else if (value === 'MC') {
+                memory = 0;
+                input.value = '';
+            } else {
+                input.value += value;
+                return;
+            }
+        }
+          // Load history when the page is loaded
+        window.onload = function() {
+            loadHistory();
+        };
+    </script>
+</head>
+
+<body>
+    <center>
+        <button class="hide" onclick="hide()"></button>
+        <div id="hide" class="calc">
+            <table>
+                <tr> 
+                    <td colspan="4"><input type="text" id="input"></td>
+                </tr>
+                <tr> 
+                    <th><button class="button1" onclick="clickButton('%')">%</button></th>
+                    <th><button class="button1" onclick="clickButton('CE')">CE</button></th>
+                    <th><button class="button1" onclick="clickButton('C')"><i class="fas fa-trash"></i></button></th>
+                    <th><button class="buttono" onclick="clickButton('/')">/</button></th>
+                </tr>
+                <tr>
+                    <th><button class="button" onclick="clickButton('7')">7</button></th>
+                    <th><button class="button" onclick="clickButton('8')">8</button></th>
+                    <th><button class="button" onclick="clickButton('9')">9</button></th>
+                    <th><button class="buttono" onclick="clickButton('*')">*</button></th>
+                </tr>
+                <tr>
+                    <th><button class="button" onclick="clickButton('4')">4</button></th>
+                    <th><button class="button" onclick="clickButton('5')">5</button></th>
+                    <th><button class="button" onclick="clickButton('6')">6</button></th>
+                    <th><button class="buttono" onclick="clickButton('-')">-</button></th>
+                </tr>
+                <tr>
+                    <th><button class="button" onclick="clickButton('1')">1</button></th>
+                    <th><button class="button" onclick="clickButton('2')">2</button></th>
+                    <th><button class="button" onclick="clickButton('3')">3</button></th>
+                    <th><button class="buttono" onclick="clickButton('+')">+</button></th>
+                </tr>
+                <tr>
+                    <th><button class="button" onclick="clickButton('0')">0</button></th>
+                    <th><button class="button" onclick="clickButton('.')">.</button></th>
+                    <th><button class="button" onclick="clickButton('=')">=</button></th>
+                    <th><button class="buttono" onclick="clickButton('M+')">M+</button></th>
+                </tr>
+                <td>
+                    <th><button class="buttono" onclick="clickButton('MR')">MR</button></th>
+                    <th><button class="buttono" onclick="clickButton('MC')">MC</button></th>
+                </td>
+            </table>
+        </div>
+    </center>
+
+    <div id="history-div">
+        <h3> History</h3>
+        <ul id="history-list"></ul>
+    </div>
+</body>
+</html>
